@@ -1,4 +1,4 @@
-WWW-BugMeNot version 0.01
+WWW-BugMeNot version 0.02
 =========================
 
 Many websites require compulsory registration before they will allow readers to access their pages. This is bad for a variety of reasons, and so many people use BugMeNot.com to share common usernames and passwords. This module provides a programmatic interface to BugMeNot. It takes a URL, and returns a username/password pair, as per the BugMeNot site.

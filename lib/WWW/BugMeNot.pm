@@ -3,7 +3,7 @@ require Exporter;
 
 our @ISA    = qw(Exporter);
 our @EXPORT = qw(password);
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 use strict;
 use warnings;
