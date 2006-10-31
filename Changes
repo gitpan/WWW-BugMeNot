@@ -1,10 +1,5 @@
-Revision history for Perl extension WWW::BugMeNot.
+Revision history for Perl extension WWW::BugMeNot
 
-0.02  Sun Sep 12 18:46:50 2004
-        Changed Makefile.PL to allow installation on versions of Perl < 5.85
+[Changes for 0.01 - 2006-10-31]
 
-
-0.01  Sun Sep 12 13:18:29 2004
-	- original version; created by h2xs 1.23 with options
-		-AXc -n WWW::BugMeNot
-
+* original version

@@ -1,28 +1,52 @@
-WWW-BugMeNot version 0.02
-=========================
-
-Many websites require compulsory registration before they will allow readers to access their pages. This is bad for a variety of reasons, and so many people use BugMeNot.com to share common usernames and passwords. This module provides a programmatic interface to BugMeNot. It takes a URL, and returns a username/password pair, as per the BugMeNot site.
+This is Perl module WWW::BugMeNot.
 
 INSTALLATION
 
-To install this module type the following:
+WWW::BugMeNot installation is straightforward. If your CPAN shell is
+set up, you should just be able to do
 
-   perl Makefile.PL
-   make
-   make test
-   make install
+    % cpan WWW::BugMeNot
 
-DEPENDENCIES
+Download it, unpack it, then build it as per the usual:
 
-This module requires these other modules and libraries:
+    % perl Makefile.PL
+    % make && make test
 
-  LWP::Simple
-  HTML::TokeParser
+Then install it:
 
-COPYRIGHT AND LICENCE
+    % make install
 
-Copyright (C) 2004 by Ben Hammersley
+DOCUMENTATION
 
-This library is free software; you can redistribute it and/or modify
-it under the same terms as Perl itself, either Perl version 5.8.5 or,
-at your option, any later version of Perl 5 you may have available.
+WWW::BugMeNot documentation is available as in POD. So you can do:
+
+    % perldoc WWW::BugMeNot
+
+to read the documentation online with your favorite pager.
+
+AUTHOR
+
+Kentaro Kuribayashi <kentaro@cpan.org>
+
+COPYRIGHT AND LICENSE (The MIT License)
+
+Copyright (c) 2006, Kentaro Kuribayashi <kentaro@cpan.org>
+
+Permission is hereby granted, free of charge, to any person
+obtaining a copy of this software and associated documentation files
+(the "Software"), to deal in the Software without restriction,
+including without limitation the rights to use, copy, modify, merge,
+publish, distribute, sublicense, and/or sell copies of the Software,
+and to permit persons to whom the Software is furnished to do so,
+subject to the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.

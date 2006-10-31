@@ -1,101 +1,163 @@
 package WWW::BugMeNot;
-require Exporter;
-
-our @ISA    = qw(Exporter);
-our @EXPORT = qw(password);
-our $VERSION = '0.02';
 
 use strict;
 use warnings;
-use LWP::Simple;
-use HTML::TokeParser;
+use Carp qw(croak);
+use URI;
+use URI::Fetch;
 
+our $VERSION = '0.01';
 
-sub password {
-    my $url = $_[0];
-    my $retrieved_bugmenot_page = &retrieve_bugmenot_url($url);
-    my @userpass = &parse_bugmenot_url($retrieved_bugmenot_page);
-    return @userpass;
+sub new { bless {}, $_[0] }
+
+sub get_accounts_for {
+    my $self     = shift;
+    my $uri      = shift or croak('URI required');
+    my @accounts = ();
+
+    my $accounts_page = URI->new('http://www.bugmenot.com/');
+    $accounts_page->path('view/' . URI->new($uri)->host);
+
+    my $response = URI::Fetch->fetch($accounts_page)
+        or return @accounts;
+
+    my $content = $response->content;
+
+    for my $match ($content =~ m|<div class="account"[^>]+?>(.+?)</div>|imsg) {
+        my %extracted;
+        my %stats;
+
+        @extracted{qw(username password comment stats)} =
+            ($match =~ m|<tr>\s*<th>.*?</th>\s*<td[^>]*?>\s*(.*?)\s*</td>\s*</tr>|imsg);
+
+        @stats{qw(percentage votes)} =
+            (_strip_tags($extracted{stats}) =~ m|\s*(?:(\d+)\s*%).+(?:(\d+)\s*votes)\s*|imsg);
+        $extracted{stats} = \%stats;
+
+        push @accounts, \%extracted;
+    }
+
+    return @accounts;
 }
 
-
-sub retrieve_bugmenot_url {
-    my $url = $_[0];
-    my $retrieved_page = get ("http://bugmenot.com/view.php?url=$url") or die("Could not retrieve http://bugmenot.com/view.php?url=$url");
-    return $retrieved_page;
+sub _strip_tags {
+    my $string = shift or return;
+    $string =~ s|<[^>]+?>||imsg;
+    $string;
 }
-
-
-sub parse_bugmenot_url {
-    my $page = $_[0];
-    my $stream = HTML::TokeParser->new(\$page) or die("Parsing Error: $!");
-    $stream -> get_tag("dd");
-    my @userpass;
-    $userpass[0] = $stream -> get_text("br");
-    $userpass[1] = $stream -> get_text("/dd");
-    return @userpass;
-}
-
-
 
 1;
-__END__
 
+__END__
 
 =head1 NAME
 
-WWW::BugMeNot - An interface to the BugMeNot.com website. Given a URL that requires a registration, it returns a donated username and password
-
-=head1 VERSION
-
-0.01 - September 12
+WWW::BugMeNot - Get anonymously shared accounts for online services
+from BugMeNot
 
 =head1 SYNOPSIS
 
-    use WWW::BugMeNot;
-    my $url = "http://www.nytimes.com";
-    my @username_and_password = password($url);
-    print "Username = $username_and_password[0]";
-    print "Password = $username_and_password[1]";
+  use WWW::BugMeNot;
+
+  my $client = WWW::BugMeNot->new;
+  my @accounts = $client->get_accounts_for('http://example.com/');
+
+  for my $account (@accounts) {
+      print $account->{ username };
+      print $account->{ password };
+      print $account->{ comment  };
+      print $account->{ stats    }{ percentage };
+      print $account->{ stats    }{ votes      };
+  }
 
 =head1 DESCRIPTION
 
-Many websites require compulsory registration before they will allow readers to access their pages. This is bad for a variety of reasons, and so many people use BugMeNot.com to share common usernames and passwords. This module provides a programmatic interface to BugMeNot.
+BugMeNot is a challenging service which collects and shares accounts
+for various online services aiming for freeness on online
+activities. It allows us to bypass login to online services, sometimes
+it's annoying when we want to only take a glance at a strange service,
+using accounts got from there.
 
-=head1 INTERFACE
+This module provides a easy way to get such shared accounts easily
+from BugMeNot.
 
-WWW::BugMeNot presents one method to the outer world:
+=head1 METHODS
 
-    password("$url")
+=head2 new
 
-Which takes a URL, and returns an array containing a username and password. The username is in $array[0] and the password in $array[1]
+=over 4
 
-That's it. There is currently no checking for sites that are not listed on BugMeNot, and the module will do horrid things upon finding such a beast.
+  my $client = WWW::BugMeNot->new;
 
-=head1 PREREQUISITES
+Creates and returnss a new WWW::BugMeNot object.
 
-L<LWP::Simple>, L<HTML::TokeParser>
+=back
 
-=head1 AUTHOR
+=head2 get_accounts_for ( I<$uri> )
 
-Ben Hammersley C<E<lt>ben@benhammersley.comE<gt>>
+=over 4
 
-=head1 BUGS
+  my @accounts = $client->get_accounts_for($uri);
 
-Potentially many. This module uses screen-scraping to retrieve the passwords. If BugMeNot change their pages, the module will break.
+  for my $account (@accounts) {
+      $account->{ username };
+      $account->{ password };
+      $account->{ comment  };
+      $account->{ stats    }{ percentage };
+      $account->{ stats    }{ votes      };
+  }
 
-Please use the CPAN bugtracking system at http://rt.cpan.org/ to report bugs, or make suggestions.
+I<get_accounts_for()> extracts anonymously shared accounts for the
+online service indicated by I<$uri>. If the accounts found, returns
+them as a list of hash-refs, or returns an empty list.
+
+The accounts are ordered by the percentage which indicate how certain
+they are. In most case, you'll pick up the first in return value.
+
+B<NOTE>: BugMeNot now supports only such accounts per domain. URIs like below
+will be wrapped up, and this method looks for and extracts accounts
+for example.com.
+
+  http://example.com/foo/
+  http://example.com/bar/
+
+=back
 
 =head1 SEE ALSO
 
-http://www.bugmenot.com
+=over 4
 
-=head1 COPYRIGHT AND LICENSE
+=item * BugMeNot
 
-Copyright (C) 2004 by Ben Hammersley
+L<http://www.bugmenot.com/>
 
-This library is free software; you can redistribute it and/or modify
-it under the same terms as Perl itself, either Perl version 5.8.5 or,
-at your option, any later version of Perl 5 you may have available.
+=back
+
+=head1 AUTHOR
+
+Kentaro Kuribayashi E<lt>kentaro@cpan.orgE<gt>
+
+=head1 COPYRIGHT AND LICENSE (The MIT License)
+
+Copyright (c) 2006, Kentaro Kuribayashi E<lt>kentaro@cpan.orgE<gt>
+
+Permission is hereby granted, free of charge, to any person
+obtaining a copy of this software and associated documentation files
+(the "Software"), to deal in the Software without restriction,
+including without limitation the rights to use, copy, modify, merge,
+publish, distribute, sublicense, and/or sell copies of the Software,
+and to permit persons to whom the Software is furnished to do so,
+subject to the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 =cut
